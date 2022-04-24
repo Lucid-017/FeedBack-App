@@ -19,6 +19,12 @@ export const FeedBackProvider=({children})=>{
             text:'Iron Man',
             rating:9
         }
+        ,
+        {
+            id:3,
+            text:'Hulk',
+            rating:10
+        }
     ])
     
     const [feedbackEdit,setFeedbackEdit]=useState([

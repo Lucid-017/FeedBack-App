@@ -9,6 +9,8 @@ const Feedbackstats = () => {
     let average= feedback.reduce((acc,cur)=>{
         return acc + cur.rating / feedback.length
     },0)
+    average = average.toFixed(1)
+    
   return (
     <div className="feedback-stats">
         <h4>{feedback.length}: reviews</h4>
