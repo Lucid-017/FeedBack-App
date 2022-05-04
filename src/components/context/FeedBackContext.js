@@ -24,24 +24,46 @@ export const FeedBackProvider=({children})=>{
     
     // fetch feedback
     const fetchFeedback = async () =>{
+        /*NOTE by adding proxy we can omit the "http://localhost:5000" 
+                from our fetch request because our updated package.json
+                now includes a proxy file that connects with the database for us
+*/
         const response = await fetch(
-            'http://localhost:5000/feedback?_sort=id&_order=desc'
+            '/feedback?_sort=id&_order=desc'
             )
         const data= await response.json()
         setFeedback(data)
         setIsLoading(false)
     }
     // delete feedback
-    const deleteFeedback=(id)=>{
+    const deleteFeedback= async (id)=>{
         if(window.confirm('Are you sure?')){
+            /*TODO when handlimg a delete request you dont need to store the await
+            in a response variable,and also no headers or body is not mandatory */
+              await fetch(`/feedback/${id}`,{
+                method:'DELETE'
+            })
           setFeedback(feedback.filter((item)=>item.id !== id))
         }
       } 
     //   add feedback
-      const addFeedback =(newFeedback)=>{
-        newFeedback.id=uuidv4()
+      const addFeedback = async (newFeedback)=>{
+        //   
+        const response =await fetch('/feedback',{
+            method: "POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(newFeedback)
+        })
+        const data = await response.json()
+        
+        /*because of the way json server works we wont be adding iD's manually anymore
+        beacuse like most databases,the serves creates the id automatically
+         */
+        // newFeedback.id=uuidv4()
         //NOTE when adding or appending to a list or set of items,always remember to include the exist set of items using the spread operator
-        setFeedback([newFeedback,...feedback])
+        setFeedback([data,...feedback])
       }
     // set item to be updated 
     const editFeedback=(item)=>{
@@ -51,9 +73,19 @@ export const FeedBackProvider=({children})=>{
         })
     }
     // update feedback item
-    const updateFeedback = (id,updatedItem)=>{
-        // call setfeedback with the newly updated
-        setFeedback(feedback.map((item)=>item.id === id?{...item,...updatedItem}:item))
+    const updateFeedback = async (id,updatedItem)=>{
+        /*we update the server 
+        we get the response back (data) which is the updated item*/
+        const response = await fetch(`/feedback/${id}`,{
+            method: "PUT",
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify(updatedItem)
+        })
+        const data =await response.json()
+        // call setfeedback with the newly updated item from the server request
+        setFeedback(feedback.map((item)=>item.id === id?{...item,...data}:item))
         /*if the id is equal to the id thats being called
             if so then you spread across the current item using a spread operator
             along with the newly updated item using a tenary operator
