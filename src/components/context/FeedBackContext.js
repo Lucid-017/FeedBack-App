@@ -1,6 +1,6 @@
 // here we will create a context that will help us to pass data through components
 // first import createcontext
-import { createContext,useState } from "react";
+import { createContext,useState,useEffect } from "react";
 import {v4 as uuidv4} from 'uuid'
 
 // now asign a variable and set that to create context
@@ -8,24 +8,8 @@ const FeedBackContext=  createContext()
 // now create a "provider"
 //the children prop refers to all our components that will need access to our context 
 export const FeedBackProvider=({children})=>{
-    const [feedback,setFeedback]=useState([
-        {
-            id:1,
-            text:'Thor Odinson',
-            rating:10
-        },
-        {
-            id:2,
-            text:'Iron Man',
-            rating:9
-        }
-        ,
-        {
-            id:3,
-            text:'Hulk',
-            rating:10
-        }
-    ])
+    const [isLoading,setIsLoading]= useState(true)
+    const [feedback,setFeedback]=useState([])
     
     const [feedbackEdit,setFeedbackEdit]=useState([
         {
@@ -33,6 +17,20 @@ export const FeedBackProvider=({children})=>{
             edit:false,
         }
     ])
+    // use useeffect to get data from database
+    useEffect(()=>{
+        fetchFeedback()
+    },[])
+    
+    // fetch feedback
+    const fetchFeedback = async () =>{
+        const response = await fetch(
+            'http://localhost:5000/feedback?_sort=id&_order=desc'
+            )
+        const data= await response.json()
+        setFeedback(data)
+        setIsLoading(false)
+    }
     // delete feedback
     const deleteFeedback=(id)=>{
         if(window.confirm('Are you sure?')){
@@ -68,11 +66,11 @@ export const FeedBackProvider=({children})=>{
         <FeedBackContext.Provider value={{
             feedback,
             feedbackEdit,
+            isLoading, 
             deleteFeedback,
             addFeedback,
             editFeedback,
-            updateFeedback,
-            
+            updateFeedback, 
         }}>
             {children}
         </FeedBackContext.Provider>
